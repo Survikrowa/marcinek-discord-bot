@@ -1,0 +1,14 @@
+services:
+  marcinek-bot:
+    container_name: marcinek-bot
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - NOTIFICATION_ROLE_ID=${NOTIFICATION_ROLE_ID}
+      - PORT=${PORT:-3000}
+    ports:
+      - "${PORT:-3000}:3000"
+

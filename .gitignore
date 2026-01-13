@@ -1,3 +1,8 @@
+# IDEs and editors
+
+.vscode/
+.idea/
+
 # Logs
 logs
 *.log
@@ -93,7 +98,6 @@ dist
 
 # vuepress v2.x temp and cache directory
 .temp
-.cache
 
 # Sveltekit cache directory
 .svelte-kit/
