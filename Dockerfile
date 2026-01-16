@@ -32,7 +32,6 @@ RUN npm install -g corepack@latest
 RUN corepack enable
 
 COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn ./.yarn
 
 # Copy built assets
 COPY --from=builder /app/dist ./dist
