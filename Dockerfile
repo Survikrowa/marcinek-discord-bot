@@ -6,7 +6,6 @@ RUN npm install -g corepack@latest
 RUN corepack enable
 
 COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn ./.yarn
 
 # Install dependencies (frozen lockfile)
 RUN yarn install --immutable
@@ -18,7 +17,6 @@ RUN npm install -g corepack@latest
 RUN corepack enable
 
 COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn ./.yarn
 # Copy installed node_modules from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
