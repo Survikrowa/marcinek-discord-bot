@@ -3,6 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Client } from 'discord.js';
 import { CronJob } from 'cron';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(customParseFormat);
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 @Injectable()
 export class NotificationService {
@@ -19,17 +27,10 @@ export class NotificationService {
     timeStr: string,
     guildId: string,
   ) {
-    const targetDate = this.parseDateTime(dateStr, timeStr);
-    const notificationDate = new Date(targetDate.getTime() - 10 * 60000); // 10 minutes before
-
-    if (notificationDate.getTime() <= Date.now()) {
-      throw new Error(
-        'Czas powiadomienia (10 minut przed wydarzeniem) już minął lub jest zbyt blisko.',
-      );
-    }
+    const notificationDate = this.calculateNotificationTime(dateStr, timeStr);
 
     const jobName = `notification-${Date.now()}`;
-    const job = new CronJob(notificationDate, async () => {
+    const job = new CronJob(notificationDate.toDate(), async () => {
       await this.sendNotifications(guildId, timeStr);
       this.schedulerRegistry.deleteCronJob(jobName);
     });
@@ -38,12 +39,17 @@ export class NotificationService {
     job.start();
 
     this.logger.log(
-      `Scheduled notification for ${notificationDate.toISOString()} (Event: ${dateStr} ${timeStr})`,
+      `Scheduled notification for ${notificationDate.format()} (Event: ${dateStr} ${timeStr})`,
     );
-    return notificationDate;
+    return notificationDate.toDate();
   }
 
-  private async sendNotifications(
+  public calculateNotificationTime(dateStr: string, timeStr: string): dayjs.Dayjs {
+    const targetDate = this.parseDateTime(dateStr, timeStr);
+    return targetDate.subtract(8, 'hour');
+  }
+
+  public async sendNotifications(
     guildId: string,
     timeStr: string,
   ) {
@@ -90,25 +96,15 @@ export class NotificationService {
     }
   }
 
-  private parseDateTime(dateStr: string, timeStr: string): Date {
-    // Expected format: DD-MM-YYYY and HH:mm
-    const [day, month, year] = dateStr.split('-').map(Number);
-    const [hours, minutes] = timeStr.split(':').map(Number);
+  private parseDateTime(dateStr: string, timeStr: string): dayjs.Dayjs {
+    const dateTimeStr = `${dateStr} ${timeStr}`;
+    const date = dayjs.tz(dateTimeStr, 'DD-MM-YYYY HH:mm', 'Europe/Warsaw');
 
-    if (
-        !day || !month || !year ||
-        hours === undefined || minutes === undefined
-    ) {
+    if (!date.isValid()) {
         throw new Error('Nieprawidłowy format daty (DD-MM-YYYY) lub godziny (HH:mm)');
     }
 
-    const date = new Date(year, month - 1, day, hours, minutes, 0);
-
-    if (isNaN(date.getTime())) {
-        throw new Error('Nieprawidłowa data');
-    }
 
     return date;
   }
 }
-
