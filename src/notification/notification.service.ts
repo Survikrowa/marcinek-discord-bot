@@ -3,9 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Client } from 'discord.js';
 import { CronJob } from 'cron';
-import dayjs from 'dayjs';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-import utc from 'dayjs/plugin/utc';
+import  dayjs from 'dayjs';
+import  customParseFormat from 'dayjs/plugin/customParseFormat';
+import  utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
 dayjs.extend(customParseFormat);
